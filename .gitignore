@@ -1,3 +1,14 @@
+# No extension executables
+*
+!*/
+!*.*
+
+# Test LLVM IR files
+test.ll
+
+# Mac
+.DS_Store
+
 # Prerequisites
 *.d
 
