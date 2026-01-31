@@ -21,15 +21,23 @@
 
 declare i32 @printf(ptr, ...)
 
-@fmtBase = private constant [22 x i8] c"callBase(Base*) = %d\0A\00"
-@fmtDerived = private constant [25 x i8] c"callBase(Derived*) = %d\0A\00"
+@fmtBase = constant [22 x i8] c"callBase(Base*) = %d\0A\00"
+@fmtDerived = constant [25 x i8] c"callBase(Derived*) = %d\0A\00"
 
 %Base = type { ptr }
 %Derived = type { %Base }
 
 ; VTables
-@VTableBase = constant { [1 x ptr] } { [1 x ptr] [ptr @Base-value] }
-@VTableDerived = constant { [1 x ptr] } { [1 x ptr] [ptr @Derived-value] }
+@VTableBase = constant { [1 x ptr] } {
+    [1 x ptr] [
+        ptr @Base-value
+    ]
+}
+@VTableDerived = constant { [1 x ptr] } { 
+    [1 x ptr] [
+        ptr @Derived-value
+    ]
+}
 
 define i32 @Base-value(%Base %this) {
 entry:
@@ -65,7 +73,8 @@ entry:
     %bVTablePtr = getelementptr %Base, ptr %b, i32 0, i32 0
 
     ; store vtable pointer in the object (done by constructor)
-    store ptr @VTableBase, ptr %bVTablePtr
+    store ptr getelementptr({ [1 x ptr] }, ptr @VTableBase, i32 0, i32 0, i32 0),
+        ptr %bVTablePtr
 
     ; call callBase(%b)
     %rB = call i32 @callBase(ptr %b)
@@ -77,7 +86,8 @@ entry:
     ; same for Derived
     %d = alloca %Derived
     %dVTablePtr = getelementptr %Derived, ptr %d, i32 0, i32 0
-    store ptr @VTableDerived, ptr %dVTablePtr
+    store ptr getelementptr({ [1 x ptr] }, ptr @VTableDerived, i32 0, i32 0, i32 0),
+        ptr %dVTablePtr
     %rD = call i32 @callBase(ptr %d)
     %fmtDerivedPtr = getelementptr [25 x i8], ptr @fmtDerived, i32 0, i32 0
     call i32 (ptr, ...) @printf(ptr %fmtDerivedPtr, i32 %rD)

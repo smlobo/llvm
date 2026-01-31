@@ -1,10 +1,10 @@
 # No extension executables
 *
-!*/
+!**/
 !*.*
 
-# Test LLVM IR files
-test.ll
+# Generated LLVM IR files
+*-gen.ll
 
 # Mac
 .DS_Store
