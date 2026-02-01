@@ -1,3 +1,5 @@
+; Multiple inheritence VTable with thunk methods (generated to get the offset-
+; to-top given the sub-object before calling the intended method)
 ; C++ code
 ; #include <cstdio>
 ; struct BaseX {
@@ -46,7 +48,7 @@ declare i32 @printf(ptr, ...)
 %BaseZ = type { ptr }
 %Derived = type { %BaseX, %BaseY, %BaseZ }
 
-; VTables (without -ve offset to full object & typeinfo)
+; VTables (without offset-to-top & RTTI)
 @VTableBaseX = constant { [1 x ptr] } {
     [1 x ptr] [
         ptr @BaseX-value
@@ -77,32 +79,26 @@ declare i32 @printf(ptr, ...)
 }
 
 define i8 @BaseX-value(%BaseX %this) {
-entry:
     ret i8 88
 }
 
 define i8 @BaseY-value(%BaseY %this) {
-entry:
     ret i8 89
 }
 
 define i32 @BaseZ-nonOverloadedValue(%BaseZ %this) {
-entry:
     ret i32 1000
 }
 
 define i8 @BaseZ-value(%BaseZ %this) {
-entry:
     ret i8 90
 }
 
 define i8 @Derived-value(%Derived %this) {
-entry:
     ret i8 68
 }
 
 define i8 @Derived-value-thunk-8(ptr %this) {
-entry:
     ; Adjust the pointer to the start of the Derived object
     %dStart = getelementptr ptr, ptr %this, i64 -8
     %r = call i8 @Derived-value(ptr %dStart)
@@ -110,7 +106,6 @@ entry:
 }
 
 define i8 @Derived-value-thunk-16(ptr %this) {
-entry:
     ; Adjust the pointer to the start of the Derived object
     %dStart = getelementptr ptr, ptr %this, i64 -16
     %r = call i8 @Derived-value(ptr %dStart)
@@ -118,7 +113,6 @@ entry:
 }
 
 define i32 @main() {
-entry:
     ; allocate struct on stack
     %d = alloca %Derived
 

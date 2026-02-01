@@ -1,3 +1,4 @@
+; Load the method address from the VTable and call
 ; C++ code
 ; struct Base {
 ;     virtual int value() const {
@@ -40,12 +41,10 @@ declare i32 @printf(ptr, ...)
 }
 
 define i32 @Base-value(%Base %this) {
-entry:
     ret i32 1
 }
 
 define i32 @Derived-value(%Derived %this) {
-entry:
     ret i32 100
 }
 
@@ -65,7 +64,6 @@ define i32 @callBase(ptr %b) {
 }
 
 define i32 @main() {
-entry:
     ; allocate struct on stack
     %b = alloca %Base
 

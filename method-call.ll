@@ -1,3 +1,4 @@
+; A normal call with the `this` object as argument
 ; C++ code
 ; struct Point {
 ;     int x;
@@ -18,7 +19,6 @@ declare i32 @printf(ptr, ...)
 %Point = type { i32, i32 }
 
 define i32 @sum(ptr %this) {
-entry:
     ; get pointers to fields
     %xPtr = getelementptr %Point, ptr %this, i32 0, i32 0
     %yPtr = getelementptr %Point, ptr %this, i32 0, i32 1
@@ -33,7 +33,6 @@ entry:
 }
 
 define i32 @main() {
-entry:
     ; allocate struct on stack
     %p = alloca %Point
 
