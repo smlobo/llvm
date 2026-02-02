@@ -1,11 +1,12 @@
-; fp vector fuzed multiply add
+; fp vector fast reciprocal sqrt estimate
 
 declare i32 @printf(ptr, ...)
+declare <4 x float> @llvm.aarch64.neon.frsqrte.v4f32(<4 x float>)
 
-@fmt = private constant [32 x i8] c"fma = <%.2f, %.2f, %.2f, %.2f>\0A\00"
+@fmt = private constant [36 x i8] c"frsqrte = <%.2f, %.2f, %.2f, %.2f>\0A\00"
 
 define <4 x float> @create() {
-    ret <4 x float> <float 1.0, float 2.0, float 3.0, float 4.0>
+    ret <4 x float> <float 1.0, float 4.0, float 9.0, float 16.0>
 }
 
 define void @print_vector(<4 x float> %vec) {
@@ -21,8 +22,7 @@ define void @print_vector(<4 x float> %vec) {
 
 define i32 @main() {
     %x = call <4 x float> @create()
-    %r = call <4 x float> @llvm.fma.v4f32(<4 x float> %x, <4 x float> %x, 
-        <4 x float> %x)
+    %r = call <4 x float> @llvm.aarch64.neon.frsqrte.v4f32(<4 x float> %x)
     call void @print_vector(<4 x float> %r)
     ret i32 0
 }
