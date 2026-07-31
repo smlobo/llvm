@@ -3,5 +3,15 @@ LLVM IR code
 
 ## Run
 ```
-lli <.ll-file>
+lli <name>.ll
+```
+
+## Create a binary
+```
+clang <name>.ll
+```
+
+## Assemble to target specific instructions
+```
+clang -S <name>.ll
 ```

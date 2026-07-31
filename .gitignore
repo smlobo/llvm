@@ -6,6 +6,12 @@
 # Generated LLVM IR files
 *-gen.ll
 
+# bitcode files
+*.bc
+
+# assemble files
+*.s
+
 # Mac
 .DS_Store
 
