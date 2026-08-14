@@ -1,5 +1,7 @@
 ; fp vector transpose
-; NOT supported by llvm21 on mac
+; Needs to be lowered on mac
+; opt  -passes='lower-matrix-intrinsics' vector-transpose.ll -S -o 
+;     vector-transpose-lowered.ll
 ; cannot use <8 x float> since ARM is 128 wide
 ; ARM NEON: max 128-bit (4 x float, 2 x double)
 ; x86 SSE: 128-bit
@@ -7,8 +9,7 @@
 ; x86 AVX-512: 512-bit (16 x float, 8 x double)
 
 declare i32 @printf(ptr, ...)
-declare <4 x float> @llvm.matrix.transpose.v4f32(<4 x float> %matrix, i32 %rows, 
-    i32 %cols)
+declare <4 x float> @llvm.matrix.transpose.v4f32(<4 x float>, i32, i32)
 
 @fmt = private constant [14 x i8] c"<%.2f, %.2f>\0A\00"
 @fmtO = private constant [13 x i8] c"Original = \0A\00"
@@ -38,6 +39,7 @@ define i32 @main() {
     call void @print_vector(<4 x float> %x)
     %r = call <4 x float> (<4 x float>, i32, i32) @llvm.matrix.transpose.v8f32(
         <4 x float> %x, i32 2, i32 2)
+    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtT))
     call void @print_vector(<4 x float> %r)
     ret i32 0
 }

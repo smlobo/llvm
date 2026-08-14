@@ -5,6 +5,7 @@
 
 # Generated LLVM IR files
 *-gen.ll
+*-lowered.ll
 
 # bitcode files
 *.bc
