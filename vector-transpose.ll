@@ -1,6 +1,6 @@
 ; fp vector transpose
 ; Needs to be lowered on mac
-; opt  -passes='lower-matrix-intrinsics' vector-transpose.ll -S -o 
+; opt -passes='lower-matrix-intrinsics' vector-transpose.ll -S -o 
 ;     vector-transpose-lowered.ll
 ; cannot use <8 x float> since ARM is 128 wide
 ; ARM NEON: max 128-bit (4 x float, 2 x double)
@@ -16,30 +16,30 @@ declare <4 x float> @llvm.matrix.transpose.v4f32(<4 x float>, i32, i32)
 @fmtT = private constant [15 x i8] c"Transposed = \0A\00"
 
 define <4 x float> @create() {
-    ret <4 x float> <float 1.0, float 2.0, float 3.0, float 4.0>
+  ret <4 x float> <float 1.0, float 2.0, float 3.0, float 4.0>
 }
 
 define void @print_vector(<4 x float> %vec) {
-    %e0 = extractelement <4 x float> %vec, i32 0
-    %e1 = extractelement <4 x float> %vec, i32 1
-    %e2 = extractelement <4 x float> %vec, i32 2
-    %e3 = extractelement <4 x float> %vec, i32 3
+  %e0 = extractelement <4 x float> %vec, i32 0
+  %e1 = extractelement <4 x float> %vec, i32 1
+  %e2 = extractelement <4 x float> %vec, i32 2
+  %e3 = extractelement <4 x float> %vec, i32 3
 
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e0, 
-        float %e1)
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e2, 
-        float %e3)
-    ret void
+  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e0, 
+    float %e1)
+  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e2, 
+    float %e3)
+  ret void
 }
 
 define i32 @main() {
-    %x = call <4 x float> @create()
+  %x = call <4 x float> @create()
 
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtO))
-    call void @print_vector(<4 x float> %x)
-    %r = call <4 x float> (<4 x float>, i32, i32) @llvm.matrix.transpose.v8f32(
-        <4 x float> %x, i32 2, i32 2)
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtT))
-    call void @print_vector(<4 x float> %r)
-    ret i32 0
+  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtO))
+  call void @print_vector(<4 x float> %x)
+  %r = call <4 x float> (<4 x float>, i32, i32) 
+    @llvm.matrix.transpose.v8f32(<4 x float> %x, i32 2, i32 2)
+  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtT))
+  call void @print_vector(<4 x float> %r)
+  ret i32 0
 }
