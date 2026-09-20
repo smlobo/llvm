@@ -11,6 +11,7 @@ define <4 x float> @create() {
 define i32 @main() {
     %x = call <4 x float> @create()
     %r = call float @llvm.vector.reduce.fadd.v4f32(float 0.0, <4 x float> %x)
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %r) 
+    %fToD = fpext float %r to double
+    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), double %fToD) 
     ret i32 0
 }

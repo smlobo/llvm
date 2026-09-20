@@ -12,6 +12,7 @@ define i32 @main() {
     %x = call <4 x float> @create()
     %mul = fmul <4 x float> %x, %x
     %r = call float @llvm.vector.reduce.fadd.v4f32(float 0.0, <4 x float> %mul)
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %r) 
+    %fToD = fpext float %r to double
+    call i32 (ptr, ...) @printf(ptr @fmt, double %fToD) 
     ret i32 0
 }

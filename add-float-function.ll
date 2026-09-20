@@ -21,7 +21,8 @@ entry:
 
     ; print
     %fmtptr = getelementptr [15 x i8], ptr @fmt, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %fmtptr, float %res)
+    %floatToDouble = fpext float %res to double
+    call i32 (ptr, ...) @printf(ptr %fmtptr, double %floatToDouble)
 
     ret i32 0
 }

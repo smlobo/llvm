@@ -1,5 +1,7 @@
 ; Dynamic cast of multiple base class to derived - use VTable offset-to-top
-; Note: inlined __dynamic_cast() with no RTTI checking
+; Simplified dynamic downcast using offset-to-top; assumes the complete object 
+; is Derived; No RTTI checking
+;
 ; C++ code
 ; struct BaseX {
 ;     int a;
@@ -26,6 +28,17 @@
 ;     printf("baseXdynamicDerived = %d, baseYdynamicDerived = %d\n", 
 ;         baseXdynamicDerived(&d), baseYdynamicDerived(&d));
 ; }
+;
+; Derived object:
+;     offset  0: BaseX vptr
+;     offset  8: BaseX::a
+;     offset 12: padding
+;     offset 16: BaseY vptr
+;     offset 24: BaseY::a
+;     offset 28: padding
+;     offset 32: Derived::a
+;     offset 36: padding
+;     total: 40 bytes
 
 declare i32 @printf(ptr, ...)
 
@@ -60,11 +73,11 @@ declare i32 @printf(ptr, ...)
     ]
 }
 
-define void @BaseX-makePolymorphic(%BaseX %this) {
+define void @BaseX-makePolymorphic(ptr %this) {
     ret void
 }
 
-define void @BaseY-makePolymorphic(%BaseX %this) {
+define void @BaseY-makePolymorphic(ptr %this) {
     ret void
 }
 
@@ -74,7 +87,7 @@ define i32 @baseXdynamicDerived(ptr %b) {
 
     ; VTable pointer
     %bXVTablePtr = load ptr, ptr %b
-    ; the top-of-offset is before the 1st method (& no RTTI)
+    ; the offset-of-top is before the 1st method (& no RTTI)
     %topOffsetPtr = getelementptr i8, ptr %bXVTablePtr, i64 -8
     %topOffset = load i64, ptr %topOffsetPtr
     ; calculate the top of the object
@@ -86,12 +99,12 @@ define i32 @baseXdynamicDerived(ptr %b) {
 }
 
 define i32 @baseYdynamicDerived(ptr %b) {
-    ; given pointer to BaseY inside Derived, get the pointer to Derived (-sizeof(i32))
+    ; given pointer to BaseY inside Derived, get the pointer to Derived
     ; use the offset-to-top like C++  __dynamic_cast, simplify to not use RTTI
 
     ; VTable pointer
     %bYVTablePtr = load ptr, ptr %b
-    ; the top-of-offset is before the 1st method (& no RTTI)
+    ; the offset-of-top is before the 1st method (& no RTTI)
     %topOffsetPtr = getelementptr i8, ptr %bYVTablePtr, i64 -8
     %topOffset = load i64, ptr %topOffsetPtr
     ; calculate the top of the object
@@ -102,7 +115,6 @@ define i32 @baseYdynamicDerived(ptr %b) {
     ret i32 %a
 }
 
-; Result: 8 bytes (two i32s)
 define i32 @main() {
     ; allocate struct on stack
     %d = alloca %Derived
@@ -134,8 +146,7 @@ define i32 @main() {
     %aValBaseYDynamicCast = call i32 @baseYdynamicDerived(ptr %bYPtr)
 
     ; print values
-    %.strPtr = getelementptr [50 x i8], ptr @.str, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.strPtr, i32 %aValBaseXDynamicCast, 
+    call i32 (ptr, ...) @printf(ptr @.str, i32 %aValBaseXDynamicCast, 
         i32 %aValBaseYDynamicCast)
 
     ret i32 0

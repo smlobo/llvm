@@ -28,22 +28,26 @@ define void @print_vector(<4 x float> %vec) {
   %e1 = extractelement <4 x float> %vec, i32 1
   %e2 = extractelement <4 x float> %vec, i32 2
   %e3 = extractelement <4 x float> %vec, i32 3
+  %d0 = fpext float %e0 to double
+  %d1 = fpext float %e1 to double
+  %d2 = fpext float %e2 to double
+  %d3 = fpext float %e3 to double
 
-  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e0, 
-    float %e1)
-  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), float %e2, 
-    float %e3)
+  call i32 (ptr, ...) @printf(ptr @fmt, double %d0, 
+    double %d1)
+  call i32 (ptr, ...) @printf(ptr @fmt, double %d2, 
+    double %d3)
   ret void
 }
 
 define i32 @main() {
   %x = call <4 x float> @create()
 
-  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtO))
+  call i32 (ptr, ...) @printf(ptr @fmtO)
   call void @print_vector(<4 x float> %x)
   %r = call <4 x float> (<4 x float>, i32, i32) 
     @llvm.matrix.transpose.v4f32(<4 x float> %x, i32 2, i32 2)
-  call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmtT))
+  call i32 (ptr, ...) @printf(ptr @fmtT)
   call void @print_vector(<4 x float> %r)
   ret i32 0
 }

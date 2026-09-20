@@ -18,8 +18,13 @@ define void @print_vector(<4 x i1> %vec) {
     %e2 = extractelement <4 x i1> %vec, i32 2
     %e3 = extractelement <4 x i1> %vec, i32 3
 
-    call i32 (ptr, ...) @printf(ptr getelementptr (ptr, ptr @fmt), i1 %e0, 
-        i1 %e1, i1 %e2, i1 %e3)
+    %int0 = zext i1 %e0 to i32
+    %int1 = zext i1 %e1 to i32
+    %int2 = zext i1 %e2 to i32
+    %int3 = zext i1 %e3 to i32
+
+    call i32 (ptr, ...) @printf(ptr @fmt, i32 %int0, i32 %int1, i32 %int2, 
+        i32 %int3)
     ret void
 }
 

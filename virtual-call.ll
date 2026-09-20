@@ -40,11 +40,11 @@ declare i32 @printf(ptr, ...)
     ]
 }
 
-define i32 @Base-value(%Base %this) {
+define i32 @Base-value(ptr %this) {
     ret i32 1
 }
 
-define i32 @Derived-value(%Derived %this) {
+define i32 @Derived-value(ptr %this) {
     ret i32 100
 }
 
@@ -78,8 +78,7 @@ define i32 @main() {
     %rB = call i32 @callBase(ptr %b)
 
     ; print values
-    %fmtBasePtr = getelementptr [22 x i8], ptr @fmtBase, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %fmtBasePtr, i32 %rB)
+    call i32 (ptr, ...) @printf(ptr @fmtBase, i32 %rB)
 
     ; same for Derived
     %d = alloca %Derived
@@ -87,8 +86,7 @@ define i32 @main() {
     store ptr getelementptr({ [1 x ptr] }, ptr @VTableDerived, i32 0, i32 0, i32 0),
         ptr %dVTablePtr
     %rD = call i32 @callBase(ptr %d)
-    %fmtDerivedPtr = getelementptr [25 x i8], ptr @fmtDerived, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %fmtDerivedPtr, i32 %rD)
+    call i32 (ptr, ...) @printf(ptr @fmtDerived, i32 %rD)
 
     ret i32 0
 }

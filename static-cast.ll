@@ -73,8 +73,7 @@ define i32 @main() {
     %aValBaseYStaticCast = call i32 @baseYstaticDerived(ptr %bYPtr)
 
     ; print values
-    %.strPtr = getelementptr [50 x i8], ptr @.str, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.strPtr, i32 %aValBaseXStaticCast, 
+    call i32 (ptr, ...) @printf(ptr @.str, i32 %aValBaseXStaticCast, 
         i32 %aValBaseYStaticCast)
 
     ret i32 0

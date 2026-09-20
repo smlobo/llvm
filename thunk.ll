@@ -1,5 +1,5 @@
-; Multiple inheritence VTable with thunk methods (generated to get the offset-
-; to-top given the sub-object before calling the intended method)
+; Multiple inheritence VTable with thunk methods (generated to adjust `this`
+; using fixed offsets given the sub-object, before calling the intended method)
 ; C++ code
 ; #include <cstdio>
 ; struct BaseX {
@@ -78,36 +78,36 @@ declare i32 @printf(ptr, ...)
     ]
 }
 
-define i8 @BaseX-value(%BaseX %this) {
+define i8 @BaseX-value(ptr %this) {
     ret i8 88
 }
 
-define i8 @BaseY-value(%BaseY %this) {
+define i8 @BaseY-value(ptr %this) {
     ret i8 89
 }
 
-define i32 @BaseZ-nonOverloadedValue(%BaseZ %this) {
+define i32 @BaseZ-nonOverloadedValue(ptr %this) {
     ret i32 1000
 }
 
-define i8 @BaseZ-value(%BaseZ %this) {
+define i8 @BaseZ-value(ptr %this) {
     ret i8 90
 }
 
-define i8 @Derived-value(%Derived %this) {
+define i8 @Derived-value(ptr %this) {
     ret i8 68
 }
 
 define i8 @Derived-value-thunk-8(ptr %this) {
     ; Adjust the pointer to the start of the Derived object
-    %dStart = getelementptr ptr, ptr %this, i64 -8
+    %dStart = getelementptr i8, ptr %this, i64 -8
     %r = call i8 @Derived-value(ptr %dStart)
     ret i8 %r
 }
 
 define i8 @Derived-value-thunk-16(ptr %this) {
     ; Adjust the pointer to the start of the Derived object
-    %dStart = getelementptr ptr, ptr %this, i64 -16
+    %dStart = getelementptr i8, ptr %this, i64 -16
     %r = call i8 @Derived-value(ptr %dStart)
     ret i8 %r
 }
@@ -117,50 +117,49 @@ define i32 @main() {
     %d = alloca %Derived
 
     ; BaseX sub-object + store BaseX vtable (constructor)
-    %dBaseX = getelementptr %Derived, ptr %d, i64 0
+    %dBaseX = getelementptr %Derived, ptr %d, i32 0, i32 0
     store ptr getelementptr ({ [1 x ptr], [1 x ptr], [2 x ptr] }, 
         ptr @VTableDerived, i32 0, i32 0, i32 0), ptr %dBaseX
 
     ; BaseY sub-object + store BaseY vtable (constructor)
-    %dBaseY = getelementptr %Derived, ptr %d, i64 8
+    %dBaseY = getelementptr %Derived, ptr %d, i32 0, i32 1
     store ptr getelementptr ({ [1 x ptr], [1 x ptr], [2 x ptr] }, 
         ptr @VTableDerived, i32 0, i32 1, i32 0), ptr %dBaseY
 
     ; BaseZ sub-object + store BaseZ vtable (constructor)
-    %dBaseZ = getelementptr %Derived, ptr %d, i64 16
+    %dBaseZ = getelementptr %Derived, ptr %d, i32 0, i32 2
     store ptr getelementptr ({ [1 x ptr], [1 x ptr], [2 x ptr] }, 
         ptr @VTableDerived, i32 0, i32 2, i32 0), ptr %dBaseZ
 
-    ; BaseX sub-object vtable; slot 0; load method; call; print
+    ; BaseX sub-object vtable; slot 0; load method; call; zero extend; print
     %dBaseXVTable = load ptr, ptr %dBaseX
     %dBaseXVTableSlot0 = getelementptr ptr, ptr %dBaseXVTable, i64 0
     %dValueMethod = load ptr, ptr %dBaseXVTableSlot0
     %dBaseXValue = call i8 %dValueMethod(ptr %d)
-    %.str.0Ptr = getelementptr [22 x i8], ptr @.str.0, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.str.0Ptr, i8 %dBaseXValue)
+    %charToIntX = zext i8 %dBaseXValue to i32
+    call i32 (ptr, ...) @printf(ptr @.str.0, i32 %charToIntX)
 
-    ; BaseY sub-object vtable; slot 0; load method; call; print
+    ; BaseY sub-object vtable; slot 0; load method; call; zero extend; print
     %dBaseYVTable = load ptr, ptr %dBaseY
     %dBaseYVTableSlot0 = getelementptr ptr, ptr %dBaseYVTable, i64 0
     %dValueThunk-8 = load ptr, ptr %dBaseYVTableSlot0
-    %dBaseYValue = call i8 %dValueThunk-8(ptr %d)
-    %.str.1Ptr = getelementptr [22 x i8], ptr @.str.1, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.str.1Ptr, i8 %dBaseYValue)
+    %dBaseYValue = call i8 %dValueThunk-8(ptr %dBaseY)
+    %charToIntY = zext i8 %dBaseYValue to i32
+    call i32 (ptr, ...) @printf(ptr @.str.1, i32 %charToIntY)
 
-    ; BaseZ sub-object vtable; slot 1; load method; call; print
+    ; BaseZ sub-object vtable; slot 1; load method; call; zero extend; print
     %dBaseZVTable = load ptr, ptr %dBaseZ
     %dBaseZVTableSlot1 = getelementptr ptr, ptr %dBaseZVTable, i64 1
     %dValueThunk-16 = load ptr, ptr %dBaseZVTableSlot1
-    %dBaseZValue = call i8 %dValueThunk-16(ptr %d)
-    %.str.2Ptr = getelementptr [22 x i8], ptr @.str.2, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.str.2Ptr, i8 %dBaseZValue)
+    %dBaseZValue = call i8 %dValueThunk-16(ptr %dBaseZ)
+    %charToIntZ = zext i8 %dBaseZValue to i32
+    call i32 (ptr, ...) @printf(ptr @.str.2, i32 %charToIntZ)
 
     ; BaseZ sub-object vtable slot 0; load method; call; print
     %dBaseZVTableSlot0 = getelementptr ptr, ptr %dBaseZVTable, i64 0
     %dNotOvrldValueMethod = load ptr, ptr %dBaseZVTableSlot0
-    %dBaseZNotOvrldValue = call i32 %dNotOvrldValueMethod(ptr %d)
-    %.str.3Ptr = getelementptr [22 x i8], ptr @.str.3, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %.str.3Ptr, i32 %dBaseZNotOvrldValue)
+    %dBaseZNotOvrldValue = call i32 %dNotOvrldValueMethod(ptr %dBaseZ)
+    call i32 (ptr, ...) @printf(ptr @.str.3, i32 %dBaseZNotOvrldValue)
 
     ret i32 0
 }

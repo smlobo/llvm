@@ -22,8 +22,7 @@ entry:
     %point1Val = load i32, ptr %point1Ptr
 
     ; print values
-    %fmtPtr = getelementptr [10 x i8], ptr @fmt, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %fmtPtr, i32 %point0Val, i32 %point1Val)
+    call i32 (ptr, ...) @printf(ptr @fmt, i32 %point0Val, i32 %point1Val)
 
     ret void
 }
@@ -39,8 +38,8 @@ loopBegin:
 
 loopBody:
     ; print index
-    %fmtLoopPtr = getelementptr [6 x i8], ptr @fmtLoop, i32 0, i32 0
-    call i32 (ptr, ...) @printf(ptr %fmtLoopPtr, i8 %index)
+    %indexInt = zext i8 %index to i32
+    call i32 (ptr, ...) @printf(ptr @fmtLoop, i32 %indexInt)
 
     ; print Point
     %pointArrayPtr = getelementptr [4 x %Point], ptr @PointArray, i32 0, 
