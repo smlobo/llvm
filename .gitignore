@@ -71,3 +71,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# graphviz CFGs
+*.dot
+*.pdf
+
