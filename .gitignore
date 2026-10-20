@@ -76,3 +76,6 @@ dkms.conf
 *.dot
 *.pdf
 
+# MIR
+*.mir
+
