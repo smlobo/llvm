@@ -12,4 +12,3 @@ entry:
   call i32 (ptr, ...) @printf(ptr %fmtptr, i32 %i32ArrayIndex2Val)
   ret i32 0
 }
-
